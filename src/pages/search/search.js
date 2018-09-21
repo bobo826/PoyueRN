@@ -15,28 +15,65 @@ import ParkHeader from '../common/header/header';
 import ListItem from '../common/listitem/item';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
+
 class SegmentedControl extends Component {
     constructor(props){
         super(props);
-    }
-    renderCell(cells){
-        let cells_view = [];
-        for (let iterator of cells) {
-            cells_view.push(<Text>{iterator}</Text>)
+        this.state = {
+            activecolor:'red',
+            color:'grey',
+            selected:false,
+            key:'',
         }
-        return cells_view;
     }
 
-    
+
     render() {
-       
+
+        //this.setState({activecolor:})
         return (
             <View style={styles.control}>
-                {this.renderCell(this.props.cells)}
+               {
+                    this.props.cells.map(
+                        (cell,index) => {
+                            return (
+                                <TouchableOpacity
+                                    key={cell.key}
+                                    style={[styles.control_cell,{borderRightWidth:cell.borderrightwidth}]} 
+                                    onPress = {
+                                        ()=>{
+                                            
+
+                                            const obj = this.props.cells;
+                                            
+                                            
+                                            this.setState({color:'grey'});
+                                            obj[0].activecolor = this.state.color;
+                                            obj[1].activecolor = this.state.color;
+                                            obj[2].activecolor = this.state.color;
+                                            console.warn(obj[0].activecolor);
+                                            
+                                            this.setState({activecolor:'red'});
+                                            obj[index].activecolor= this.state.activecolor;
+                                            
+
+                                        }
+                                    }
+                                >
+                                    <Text style={{color:cell.activecolor}}>{cell.value}</Text>
+                                    <EvilIcons name='chevron-up' size={25} color={cell.activecolor} /> 
+                                </TouchableOpacity>
+                            )
+                            
+                        } 
+                    )
+                }
             </View>
         )
     }
 }
+
+
 
 
 class search extends Component {
@@ -136,7 +173,7 @@ class search extends Component {
                             this.setState({
                                 bgcolor:'white',
                                 selectshow:false,
-                                left_content:<EvilIcons name='chevron-left' size={25} color='grey' />,
+                                left_content:<EvilIcons name='chevron-left' size={40} color='grey' />,
                                 centershow:false,
                                 center_content:<Text style={styles.center_title}>停车场列表</Text>
                             })
@@ -182,9 +219,14 @@ class search extends Component {
                         null 
                         : 
                         <SegmentedControl 
-                            cells={['距离优先', '空位优先','价位优先']}
+                            cells={
+                                [
+                                    {value:'距离优先',key:1,borderrightwidth:0.5,activecolor:'red'},
+                                    {value:'空位优先',key:2,borderrightwidth:0.5,activecolor:'grey'},
+                                    {value:'价格优先',key:3,borderrightwidth:0,activecolor:'grey'}
+                                ]
+                            }
                         />
-                        // <SegmentedControl selectedIndex={1} values={['距离优先','空位优先','价位优先']} />
                     }
                 </View>
             </View>    
@@ -223,13 +265,22 @@ const styles = StyleSheet.create({
     },
     control:{
         height:44,
-        backgroundColor:'#eee',
+        backgroundColor:'white',
         width:'100%',
-        borderTopWidth:1,
-        borderTopColor:'grey',
+        borderTopWidth:.5,
+        borderTopColor:'#eee',
+        borderBottomWidth:.5,
+        borderBottomColor:'#eee',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    control_cell:{
+        flexDirection:'row',
+        flex:1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRightColor:'#eee',
     }
 });
 
