@@ -100,7 +100,7 @@ export default class ListItem extends Component {
                     <View style={styles.price}>
                         <Text style={{paddingRight:10,color:'#598eff'}} >600m</Text>
                         <Text style={{paddingRight:10,color:'green'}} >空车位:113</Text>
-                        <Text style={{color:'orange'}} >￥6.00/2h</Text>
+                        <Text style={{color:global.theme.color_orange}} >￥6.00/2h</Text>
                         <View style={styles.btn}>
                             <TouchableOpacity
                                 style={[styles.child_btn,{backgroundColor:global.theme.color}]}
@@ -108,7 +108,7 @@ export default class ListItem extends Component {
                             >
                                 <Text style={{color:'white'}}>导航</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.child_btn,{backgroundColor:'orange'}]}>
+                            <TouchableOpacity style={[styles.child_btn,{backgroundColor:global.theme.color_orange}]}>
                                 <Text style={{color:'white'}}>预约</Text>
                             </TouchableOpacity>
                         </View>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: -32,
         top: 0,
-        backgroundColor: 'orange',
+        backgroundColor: global.theme.color_orange,
         alignItems: 'center',
         transform: [{rotate:'45deg'}]
     },

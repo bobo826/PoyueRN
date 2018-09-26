@@ -5,6 +5,9 @@ import {
     Image,
     StyleSheet,
 } from 'react-native';
+import Search from '../search/search';
+
+
 export default class Park extends Component {
     // static navigationOptions = {
     //     tabBarLabel:'找车位'
@@ -12,9 +15,9 @@ export default class Park extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
-                <Text>park</Text>
-            </View>
+            <Search 
+                is_show_goback={false}
+            />
         );
     }
 }

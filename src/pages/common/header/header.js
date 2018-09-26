@@ -40,7 +40,7 @@ export default class Header extends Component {
                     </View>
                     
                     <TouchableOpacity style={styles.right}>
-                        {this.props.right ? <EvilIcons name='comment' size={25} color='white' /> : this.props.right_content}
+                        {this.props.right ? <EvilIcons name='comment' size={30} color='white' /> : this.props.right_content}
                     </TouchableOpacity>
                 </View>
             </View>

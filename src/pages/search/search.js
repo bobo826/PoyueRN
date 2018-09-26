@@ -77,6 +77,7 @@ class SegmentedControl extends Component {
 
 
 class search extends Component {
+    
     constructor(props) {
         super(props);
         this.state = {
@@ -99,6 +100,10 @@ class search extends Component {
         };
     }
 
+   
+    static defaultProps = {
+        is_show_goback: true
+    }
     
 
     componentDidMount(){
@@ -142,6 +147,7 @@ class search extends Component {
         })
     }
     render() {
+        
         return (
             <View style={styles.container}>
                 <MapView 
@@ -156,9 +162,9 @@ class search extends Component {
                     onMarkerClick={(e) => {
                         console.warn(JSON.stringify(e));
                     }}
-                    onMapClick={(e) => {
-                        this.props.navigation.navigate('Search')
-                    }}
+                    // onMapClick={(e) => {
+                    //     this.props.navigation.navigate('Search')
+                    // }}
 
                     onMapStatusChange = {(e) => {
                         //console.warn(JSON.stringify(e));
@@ -173,7 +179,7 @@ class search extends Component {
                             this.setState({
                                 bgcolor:'white',
                                 selectshow:false,
-                                left_content:<EvilIcons name='chevron-left' size={40} color='grey' />,
+                                left_content:this.props.is_show_goback ? <EvilIcons name='chevron-left' size={30} color='grey' onPress = {() => this.props.navigation.goBack()}/> : null,
                                 centershow:false,
                                 center_content:<Text style={styles.center_title}>停车场列表</Text>
                             })

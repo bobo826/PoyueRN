@@ -14,7 +14,7 @@ import HomeHeader from '../common/header/header';
 import Slider from './components/swiper/slider';
 import NvaBar from './components/navbar/nav';
 import MapView from './components/map/map';
-import ListItem from "./components/listitem/item";
+import ListItem from "../common/listitem/item";
 
 export default class Home extends Component {
     constructor(props, context) {
