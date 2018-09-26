@@ -56,17 +56,13 @@ export default class Home extends Component {
                     <TouchableOpacity 
                         activeOpacity = {1}
                         style={styles.map}
-                        onPress = {() => this.props.navigation.navigate('Search')}
+                        //onPress = {() => this.props.navigation.navigate('Search')}
                     >
                         <MapView navigation = {this.props.navigation}/>
                     </TouchableOpacity>
                     <WhiteSpace size='sm'/>
                     <ListItem />
-                    <ListItem />
-                    <ListItem />
-                    <ListItem />
-                    <ListItem />
-                    
+                
                 </ScrollView>
 
                 <View style={[styles.header]}>

@@ -20,7 +20,7 @@ export default class BaiduMap extends Component {
         super(props);
         this.state = {
             mayType: MapTypes.NORMAL,
-            zoom: 15,
+            zoom: 14,
             center: {
               longitude: 113.981718,
               latitude: 22.542449
@@ -36,7 +36,7 @@ export default class BaiduMap extends Component {
 
     componentDidMount(){
         this.setState({
-            zoom:14,
+            //zoom:14,
             markers: [{
                 longitude: 104.069467,
                 latitude: 30.584607,
@@ -56,7 +56,7 @@ export default class BaiduMap extends Component {
         .then(data => {
             //console.warn(JSON.stringify(data));
             this.setState({
-            zoom: 14,
+            //zoom: 14,
             tname:data.address,    
             marker: {
                 latitude: data.latitude,
@@ -118,7 +118,7 @@ export default class BaiduMap extends Component {
                         console.warn(JSON.stringify(e));
                     }}
                     onMapClick={(e) => {
-                        
+                        this.props.navigation.navigate('Search')
                     }}
 
                     onMapStatusChange = {(e) => {

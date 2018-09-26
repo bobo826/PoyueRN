@@ -86,7 +86,7 @@ export default class ListItem extends Component {
             <BoxShadow setting={shadowOpt}>
                 <View style={styles.list_cell}>
                     <Text style={styles.list_cell_title}>
-                        这是标题占位符
+                        {this.props.goods_name}
                     </Text>
                     <View style={styles.list_cell_adress}>
                         <Feather name='map-pin' size={14} color='grey' style={{paddingTop:3}}/>
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         backgroundColor:'white',
+        
     },
     list_cell_title:{
         fontSize:18,
