@@ -15,8 +15,9 @@ import ParkHeader from '../common/header/header';
 import ListItem from '../common/listitem/item';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
-//引入api配置json
-import API from '../../api/api.json'
+import Tools from '../../tools/tools';
+import API  from '../../api/api.json';
+const tools = new Tools();//实例化工具;
 class SegmentedControl extends Component {
     constructor(props){
         super(props);
@@ -41,21 +42,13 @@ class SegmentedControl extends Component {
                                     style={[styles.control_cell,{borderRightWidth:cell.borderrightwidth}]} 
                                     onPress = {
                                         ()=>{
-                                            
-
                                             const obj = this.props.cells;
-                                            
-                                            
                                             this.setState({color:'grey'});
                                             obj[0].activecolor = this.state.color;
                                             obj[1].activecolor = this.state.color;
                                             obj[2].activecolor = this.state.color;
-                                            console.warn(obj[0].activecolor);
-                                            
                                             this.setState({activecolor:global.theme.color});
                                             obj[index].activecolor= this.state.activecolor;
-                                            
-
                                         }
                                     }
                                 >
@@ -81,16 +74,18 @@ class search extends Component {
         
         super(props);
         this.state = {
-             //地图与列表图层冲突解决方法
-            //marginTop:400,
+    
             //分页功能所需参数
-            start_row:1,//页面索引
-            page_size:1,//页面显示数据条数
+            currentPage:1,//页面索引
+            pageSize:6,//页面显示数据条数
             lat:0,//经度
             lng:0,//纬度
             distance:1000,
 
             dataSource:{},
+
+            isloading:false,//数据是否已经加载完毕标志默认为未加载完毕
+
             //搜索相关
             search_value:'停车场',
             //导航相关
@@ -125,43 +120,36 @@ class search extends Component {
     
     //上拉刷新事件
     onEndReached  (event) {
-        //console.warn("上拉触发")
-    }
-
-
-    Post(url){
         const param = {
-                start_row:this.state.start_row,
-                page_size:this.state.page_size,
-                lat:this.state.lat,
-                lng:this.state.lng,
-                distance:this.state.distance
-            };
-        const paramStr = JSON.stringify(param);
-        // post请求描述
-        const requestDesc = {
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:paramStr
+            currentPage:this.state.currentPage,
+            pageSize:this.state.pageSize,
+            lat:this.state.lat,
+            lng:this.state.lng,
+            distance:this.state.distance
         };
-        // 发送post请求
-        fetch(url,requestDesc)
-            .then((response)=>response.json())
-            .then((json)=>{
-                if (json.code===0) {
-                    this.setState({dataSource:json.data.items})
-                } else {
-                    
-                }
-            })
-            .catch((error)=>{
-                console.warn(error)
-            })
+        if (!this.state.isloading) {
+            tools.Post(API.search,param,this.success.bind(this));
+        } else {
+            //console.warn("数据已加载所有");
+        }
+        
     }
-    
 
+
+    success(json) {
+        if (json.code===0) {
+            this.setState({dataSource:[...this.state.dataSource,...json.data.list]})
+            if (json.data.hasNextPage) {
+                this.setState({currentPage:this.state.currentPage+1})
+            } else {
+                //this.setState({currentPage:this.state.currentPage})
+                this.setState({isloading:true})
+                
+            }
+        } else {
+
+        }
+    }
 
     componentDidMount(){
         this.setState({
@@ -180,7 +168,14 @@ class search extends Component {
         this.getPosition();
         // 第一次页面加载时发送post请求
         
-        this.Post(API.search);
+        const param = {
+            currentPage:this.state.currentPage,
+            pageSize:this.state.pageSize,
+            lat:this.state.lat,
+            lng:this.state.lng,
+            distance:this.state.distance
+        };
+        tools.Post(API.search,param,this.success.bind(this));
     }
 
     getPosition () {
@@ -259,7 +254,17 @@ class search extends Component {
                         }
                     }}
                     data={this.state.dataSource}
-                    renderItem={({item}) => <ListItem key={item.key} goods_name={item.goods_name}/>}
+                    renderItem={
+                        ({item}) => <ListItem 
+                            key={item.key} 
+                            goods_name={item.goods_name}//停车场名称
+                            distance={item.distance}//距离
+                            dz={item.dz}//地址
+                            park_label={item.park_label}//营业时间
+                            pay_type = {item.pay_type}//支付方式
+                            istj = {item.istj}//是否推荐，0表示不推荐
+                    />
+                    }
                     onEndReached={this.onEndReached.bind(this)}
                     onEndReachedThreshold = {0.5}
                 />
@@ -303,11 +308,8 @@ class search extends Component {
 
 const styles = StyleSheet.create({
     container:{
-        
+        height: '100%'//父元素的样式设成{height: '100%'}，这样就可以正确的触发onEndReached监听次数。
     },
-    // flatList:{
-    //     marginTop:400,
-    // },
     header:{
         position:'absolute',
         top:0,
@@ -316,10 +318,7 @@ const styles = StyleSheet.create({
     },
     map: {
         width: Dimensions.get('window').width,
-        height: 400,
-        // position:'absolute',
-        // top:0,
-        // zIndex:-1
+        height: Dimensions.get('window').height-250,
     },
     center_title:{
         color:'#222',

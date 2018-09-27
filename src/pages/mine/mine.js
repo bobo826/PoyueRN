@@ -17,9 +17,7 @@ class ListCell extends Component {
     constructor(props, context) {
         super(props, context)
         this.state={
-            deviceW:Dimensions.get('window').width,
-      
-            
+            deviceW:Dimensions.get('window').width
         }
     }
     render() {

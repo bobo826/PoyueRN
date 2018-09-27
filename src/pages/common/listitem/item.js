@@ -71,16 +71,28 @@ export default class ListItem extends Component {
     
     }
     
+    paytype(){
+        let pay_type ='';
+        if (this.props.pay_type=='1') {
+            pay_type = '现金支付';
+        } else if(this.props.pay_type=='2'){
+            pay_type = '自动支付';
+        }else{
+            pay_type = '现金支付,自动支付';
+        }
+        return pay_type;
+    }
+
     render() {
         const shadowOpt = {
             width:this.state.deviceW,
             height:160,
-            color:"#ccc",
+            color:"#eee",
             borderB:15,
             radius:8,
             opacity:0.1,
-            x:-1,
-            y:3
+            x:0,
+            y:0
         }
         return (
             <BoxShadow setting={shadowOpt}>
@@ -90,15 +102,15 @@ export default class ListItem extends Component {
                     </Text>
                     <View style={styles.list_cell_adress}>
                         <Feather name='map-pin' size={14} color='grey' style={{paddingTop:3}}/>
-                        <Text style={{paddingLeft:5,color:'grey'}}>地址占位符</Text>
+                        <Text style={{paddingLeft:5,color:'grey'}}>{this.props.dz}</Text>
                     </View>
                     <View style={styles.list_cell_time}>
-                        <Text>现金支付</Text>
+                        <Text>{this.paytype()}</Text>
                         <Text style={{paddingRight:10,paddingLeft:10}}>|</Text>
-                        <Text>24H</Text>
+                        <Text>{this.props.park_label}</Text>
                     </View>
                     <View style={styles.price}>
-                        <Text style={{paddingRight:10,color:'#598eff'}} >600m</Text>
+                        <Text style={{paddingRight:10,color:'#598eff'}} >{this.props.distance}m</Text>
                         <Text style={{paddingRight:10,color:'green'}} >空车位:113</Text>
                         <Text style={{color:global.theme.color_orange}} >￥6.00/2h</Text>
                         <View style={styles.btn}>
@@ -106,17 +118,23 @@ export default class ListItem extends Component {
                                 style={[styles.child_btn,{backgroundColor:global.theme.color}]}
                                 onPress={this.iosmap.bind(this)}
                             >
-                                <Text style={{color:'white'}}>导航</Text>
+                                <Text style={{color:'white'}}>预约</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.child_btn,{backgroundColor:global.theme.color_orange}]}>
-                                <Text style={{color:'white'}}>预约</Text>
+                                <Text style={{color:'white'}}>导航</Text>
                             </TouchableOpacity>
                         </View>
                         
                     </View>
-                    <View style={styles.badge}>
-                        <Text style={{color:'white'}}>推荐</Text>
-                    </View>
+                    {
+                        this.props.istj === 1 ?
+                        <View style={styles.badge}>
+                            <Text style={{color:'white'}}>推荐</Text>
+                        </View>
+                        :
+                        null
+                    }
+                    
                 </View>
             </BoxShadow>
             
