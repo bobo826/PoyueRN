@@ -8,16 +8,19 @@ import {
     Dimensions,
     TouchableOpacity,
     FlatList,
-    Button
+    Button,
+    SectionList
 } from 'react-native';
 import {SearchBar } from 'antd-mobile-rn'
 import ParkHeader from '../common/header/header';
 import ListItem from '../common/listitem/item';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
-import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
+import {MapTypes, MapModule, Geolocation } from 'react-native-baidu-map';
+import MapView from './components/map/map';
 import Tools from '../../tools/tools';
 import API  from '../../api/api.json';
 const tools = new Tools();//实例化工具;
+//const geolocation = new Geolocation();
 class SegmentedControl extends Component {
     constructor(props){
         super(props);
@@ -28,7 +31,6 @@ class SegmentedControl extends Component {
             key:'',
         }
     }
-
 
     render() {
         return (
@@ -75,15 +77,16 @@ class search extends Component {
         super(props);
         this.state = {
     
-            //分页功能所需参数
-            currentPage:1,//页面索引
-            pageSize:6,//页面显示数据条数
+            //post提交参数
+            page_index:1,//页面索引
+            page_size:3,//页面显示数据条数
             lat:0,//经度
             lng:0,//纬度
-            distance:1000,
+            distance:1000,//搜索半径
+            sort:1,//筛选标志
 
-            dataSource:{},
-
+            //post请求到的参数
+            dataSource:[],//放置post请求到的参数
             isloading:false,//数据是否已经加载完毕标志默认为未加载完毕
 
             //搜索相关
@@ -94,43 +97,38 @@ class search extends Component {
             left_content: null,
             centershow:true,
             center_content:null,
+
             //地图相关
             mayType: MapTypes.NORMAL,
             zoom: 14,
-            center: {
-              longitude: 113.981718,
-              latitude: 22.542449
-            },
+            center:null,
             trafficEnabled: false,
             baiduHeatMapEnabled: false,
-            park_num:88,
-            tname:'奥克斯广场停车场'
+            point:[]
         };
 
         
     }
 
-    
-   
     static defaultProps = {
         is_show_goback: true,
-         //地图与列表图层冲突解决方法
-        
     }
     
     //上拉刷新事件
     onEndReached  (event) {
-        const param = {
-            currentPage:this.state.currentPage,
-            pageSize:this.state.pageSize,
-            lat:this.state.lat,
-            lng:this.state.lng,
-            distance:this.state.distance
-        };
+       
         if (!this.state.isloading) {
+            //console.warn("onEndReached")
+            const param = {
+                page_index:this.state.page_index,
+                page_size:this.state.page_size,
+                lat:this.state.lat,
+                lng:this.state.lng,
+                distance:this.state.distance
+            };
             tools.Post(API.search,param,this.success.bind(this));
         } else {
-            //console.warn("数据已加载所有");
+            console.warn("数据已加载所有");
         }
         
     }
@@ -138,11 +136,31 @@ class search extends Component {
 
     success(json) {
         if (json.code===0) {
-            this.setState({dataSource:[...this.state.dataSource,...json.data.list]})
+            this.setState({dataSource:[...this.state.dataSource,...json.data.list]});
+            //console.warn(this.state.dataSource);
+            
+            let pointarr = [];
+            json.data.list.map((item)=>{
+                pointarr.push(
+                    {
+                        latitude: parseFloat(item.lat),
+                        longitude: parseFloat(item.lng),
+                        title:item.goods_name
+                    }
+                )
+                return pointarr;
+            })
+            //console.warn(...pointarr);
+            this.setState({
+                point:pointarr
+            });
+            //console.warn(...this.state.point);
+           
             if (json.data.hasNextPage) {
-                this.setState({currentPage:this.state.currentPage+1})
+                this.setState({page_index:this.state.page_index+1})
+                //console.warn(this.state.page_index);
             } else {
-                //this.setState({currentPage:this.state.currentPage})
+                //this.setState({page_index:this.state.page_index})
                 this.setState({isloading:true})
                 
             }
@@ -151,50 +169,49 @@ class search extends Component {
         }
     }
 
-    componentDidMount(){
-        this.setState({
-            //zoom:14,
-            markers: [{
-                longitude: 104.069467,
-                latitude: 30.584607,
-                title: "Window of the world"
-              },{
-                longitude: 104.069473,
-                latitude: 30.584603,
-                title: ""
-              }]
-        });
+    componentWillMount(){
+        
         //获取当前定位
         this.getPosition();
         // 第一次页面加载时发送post请求
-        
         const param = {
-            currentPage:this.state.currentPage,
-            pageSize:this.state.pageSize,
+            page_index:this.state.page_index,
+            page_size:this.state.page_size,
             lat:this.state.lat,
             lng:this.state.lng,
             distance:this.state.distance
         };
         tools.Post(API.search,param,this.success.bind(this));
+
+        
+
+        
     }
 
+
+
     getPosition () {
-        Geolocation.getCurrentPosition()
-        .then(data => {
+        Geolocation.getCurrentPosition().then(
+            (data) => {
+            
             this.setState({
-            //zoom: 14,
-            tname:data.address,    
-            marker: {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                title: 'Your location'
-            },
+            zoom:14,
+            markers: [
+                ...this.state.point,
+                {
+                    latitude: parseFloat(data.latitude),
+                    longitude: parseFloat(data.longitude),
+                    title: data.address
+                }
+                
+            ],
             center: {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                rand: Math.random()
+                latitude: parseFloat(data.latitude),
+                longitude: parseFloat(data.longitude)
             }
             });
+
+           
         })
         .catch(e =>{
             console.warn(e, 'error');
@@ -202,32 +219,31 @@ class search extends Component {
     }
 
   
+  
     render() {
         return (
             <View style={styles.container}>
+              
                 <FlatList
+                    keyExtractor={(item, index) => item.key}
                     ListHeaderComponent = {
-                        <MapView 
-                            trafficEnabled={this.state.trafficEnabled}
-                            baiduHeatMapEnabled={this.state.baiduHeatMapEnabled}
-                            zoom={this.state.zoom}
-                            mapType={this.state.mapType}
-                            center={this.state.center}
-                            marker={this.state.marker}
-                            markers={this.state.markers}
-                            style={styles.map}
-                            onMarkerClick={(e) => {
-                                console.warn(JSON.stringify(e));
-                            }}
-                            // onMapClick={(e) => {
-                            //     this.props.navigation.navigate('Search')
-                            // }}
-
-                            onMapStatusChange = {(e) => {
-                                //console.warn(JSON.stringify(e));
-                            }}
-                        >
-                        </MapView>
+                   
+                        <MapView
+                            mayType ={this.state.mayType}
+                            zoom = {this.state.zoom}
+                            center = {this.state.center}
+                            trafficEnabled = {this.state.trafficEnabled}
+                            baiduHeatMapEnabled = {this.state.baiduHeatMapEnabled}
+                           
+                            markers = {this.state.markers}//自定义添加markers
+                            width = {Dimensions.get('window').width}
+                            height = {Dimensions.get('window').height-250}
+                            
+                            navigation = {this.props.navigation}//导航属性传递
+                            
+                        />
+                    
+                        
                     }
                     //style = {{marginTop:400}}
                     onScroll = {(e)=>{
@@ -236,10 +252,9 @@ class search extends Component {
                             this.setState({
                                 bgcolor:'white',
                                 selectshow:false,
-                                left_content:this.props.is_show_goback ? <EvilIcons name='chevron-left' size={30} color='grey' onPress = {() => this.props.navigation.goBack()}/> : null,
+                                left_content:this.props.is_show_goback ? <EvilIcons name='chevron-left' size={30} color='grey' onPress = {()=>this.props.navigation.goBack()}/> : null,
                                 centershow:false,
                                 center_content:<Text style={styles.center_title}>停车场列表</Text>,
-                                //marginTop:0
                             })
                         } else {
                             this.setState({
@@ -256,7 +271,7 @@ class search extends Component {
                     data={this.state.dataSource}
                     renderItem={
                         ({item}) => <ListItem 
-                            key={item.key} 
+                            //key={item.key} 
                             goods_name={item.goods_name}//停车场名称
                             distance={item.distance}//距离
                             dz={item.dz}//地址
@@ -266,7 +281,7 @@ class search extends Component {
                     />
                     }
                     onEndReached={this.onEndReached.bind(this)}
-                    onEndReachedThreshold = {0.5}
+                    onEndReachedThreshold = {0.2}
                 />
 
                
@@ -316,10 +331,7 @@ const styles = StyleSheet.create({
         height:44,
         width:'100%',
     },
-    map: {
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height-250,
-    },
+  
     center_title:{
         color:'#222',
         fontSize:18

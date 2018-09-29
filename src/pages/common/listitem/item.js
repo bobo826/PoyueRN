@@ -116,11 +116,13 @@ export default class ListItem extends Component {
                         <View style={styles.btn}>
                             <TouchableOpacity
                                 style={[styles.child_btn,{backgroundColor:global.theme.color}]}
-                                onPress={this.iosmap.bind(this)}
                             >
                                 <Text style={{color:'white'}}>预约</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.child_btn,{backgroundColor:global.theme.color_orange}]}>
+                            <TouchableOpacity 
+                                style={[styles.child_btn,{backgroundColor:global.theme.color_orange}]}
+                                onPress={this.iosmap.bind(this)}
+                            >
                                 <Text style={{color:'white'}}>导航</Text>
                             </TouchableOpacity>
                         </View>

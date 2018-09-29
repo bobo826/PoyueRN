@@ -12,124 +12,101 @@ import {
 } from 'react-native';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';//使用时需要配置或者react-native link
 import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
-
+const HomeMap = ()=>new MapView();
 
 
 export default class BaiduMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            mayType: MapTypes.NORMAL,
-            zoom: 14,
-            center: {
-              longitude: 113.981718,
-              latitude: 22.542449
-            },
-            trafficEnabled: false,
-            baiduHeatMapEnabled: false,
-            park_num:88,
-            tname:'奥克斯广场停车场'
-        };
+            showmap:true//是否显示地图
+        }
     }
 
-    
+// addListener – 订阅导航生命周期事件变化
+// React Navigation 会向做了订阅的screen屏组件发送事件: 
+// willBlur – 屏幕将要被取消聚焦
+// didBlur – 屏幕被取消了聚焦(如果有过渡动画，在过渡完成时)
+// willFocus – 屏幕将要被聚焦
+// didFocus – 屏幕被聚焦(如果有过渡动画，在过渡完成时)
 
-    componentDidMount(){
-        this.setState({
-            //zoom:14,
-            markers: [{
-                longitude: 104.069467,
-                latitude: 30.584607,
-                title: "Window of the world"
-              },{
-                longitude: 104.069473,
-                latitude: 30.584603,
-                title: ""
-              }]
-        });
-        this.getPosition()
-    }
-
-    getPosition () {
-        //console.warn('center', this.state.center);
-        Geolocation.getCurrentPosition()
-        .then(data => {
-            //console.warn(JSON.stringify(data));
-            this.setState({
-            //zoom: 14,
-            tname:data.address,    
-            marker: {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                title: 'Your location'
-            },
-            center: {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                rand: Math.random()
+    willFocusSubscription(){
+        this.props.navigation.addListener(
+            'willFocus',
+            payload => {
+                payload = {
+                    action: { type: 'Navigation/COMPLETE_TRANSITION', key: 'StackRouterRoot' },
+                    context: 'id-1518521010538-2:Navigation/COMPLETE_TRANSITION_Root',
+                    lastState: undefined,
+                    state: undefined,
+                    type: 'willFocus',
+                };
+                console.log("willFocus",payload);
+                this.setState({
+                    showmap:true
+                })
+                
             }
-            });
-        })
-        .catch(e =>{
-            console.warn(e, 'error');
-        })
+        );
     }
+
+  
+
+    willBlurSubscription(){
+        this.props.navigation.navigate('Search');
+        this.props.navigation.addListener(
+            'willBlur',
+            payload => {
+                payload = {
+                    action: { type: 'Navigation/COMPLETE_TRANSITION', key: 'StackRouterRoot' },
+                    context: 'id-1518521010538-2:Navigation/COMPLETE_TRANSITION_Root',
+                    lastState: undefined,
+                    state: undefined,
+                    type: 'willBlur',
+                };
+                console.log("willBlur",payload);
+                this.setState({showmap:false})
+                
+                
+            }
+        );
+    }
+
 
     render() {
-       
         return (
-            <View>
-                <View style={styles.title}>
-                    <Text style={styles.park_num}>
-                        附近有
-                        <Text style={[ styles.park_num, {color:global.theme.color}]}>{this.state.park_num}</Text>
-                        个停车场
-                    </Text>
-                    <View style={styles.tname}>
-                        <Text 
-                            style={styles.tname_text}
-                            numberOfLines={1}
-                            //ellipsizeMode = 'tail' 
-                        >
-                            {this.state.tname}
-                        </Text>
-                        <TouchableOpacity
-                            onPress={this.getPosition.bind(this)}
-                        >
-                            <EvilIcons 
-                                name='refresh' 
-                                size={28} 
-                                color={global.theme.color}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                   
-                </View>
-                <MapView 
-                    trafficEnabled={this.state.trafficEnabled}
-                    baiduHeatMapEnabled={this.state.baiduHeatMapEnabled}
-                    zoom={this.state.zoom}
-                    mapType={this.state.mapType}
-                    center={this.state.center}
-                    marker={this.state.marker}
-                    markers={this.state.markers}
-                    style={styles.map}
-                    onMarkerClick={(e) => {
-                        console.warn(JSON.stringify(e));
-                    }}
-                    onMapClick={(e) => {
-                        this.props.navigation.navigate('Search')
-                    }}
+                <View>
+                    {
+                        this.state.showmap ?
+                        <HomeMap 
+                            trafficEnabled={this.props.trafficEnabled}
+                            baiduHeatMapEnabled={this.props.baiduHeatMapEnabled}
+                            zoom={this.props.zoom}
+                            mapType={this.props.mapType}
+                            center={this.props.center}
+                            //marker={this.props.marker}
+                            markers={this.props.markers}
 
-                    onMapStatusChange = {(e) => {
-                        //console.warn(JSON.stringify(e));
-                    }}
-                >
-                </MapView>
-                <Text style={styles.footer}>
-                推荐停车场</Text>
-            </View>
-        );
+                            style={[styles.map,{width:this.props.width,height:this.props.height}]}
+                            onMarkerClick={(e) => {
+                                //console.warn(JSON.stringify(e));
+                            }}
+                            onMapClick={(e) => {
+                                this.willBlurSubscription();//addListener – 订阅导航生命周期事件变化
+                                this.willFocusSubscription();//addListener – 订阅导航生命周期事件变化
+                            }}
+
+                            onMapStatusChange = {(e) => {
+                                //console.warn(JSON.stringify(e));
+                            }}
+                        >
+                        </HomeMap> 
+                        :
+                        null
+                    }
+                    
+                </View>
+            )
     }
 }
 
@@ -155,10 +132,9 @@ const styles = StyleSheet.create({
         color:'#bcbcbc'
     },
     map: {
-        paddingLeft:10,
-        paddingRight:10,
-        width: Dimensions.get('window').width-20,
-        height: 180
+        alignItems: 'center',
+        justifyContent: 'center',
+      
     },
     footer:{
         paddingTop:15,

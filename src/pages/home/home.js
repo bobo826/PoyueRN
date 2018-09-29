@@ -11,6 +11,8 @@ import {
     FlatList
 } from 'react-native';
 import { WhiteSpace , Card , WingBlank , List ,Badge  } from 'antd-mobile-rn'
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import { MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
 import HomeHeader from '../common/header/header';
 import Slider from './components/swiper/slider';
 import NvaBar from './components/navbar/nav';
@@ -25,40 +27,92 @@ export default class Home extends Component {
         super(props, context);
         this.state = {
             //分页功能所需参数
-            currentPage:1,//页面索引
-            pageSize:1,//页面显示数据条数
+            page_index:1,//页面索引
+            page_size:1,//页面显示数据条数
             lat:0,//经度
             lng:0,//纬度
             distance:1000,
-            dataSource:{},
+            dataSource:[],
+            bgcolor:'rgba(0, 0, 0, 0)',//滚动监听设置透明背景
+            park_num:null, //停车场个数
 
-            bgcolor:'rgba(0, 0, 0, 0)',
+            //地图相关
+            mayType: MapTypes.NORMAL,
+            zoom: 14,
+            center:null,
+            trafficEnabled: false,
+            baiduHeatMapEnabled: false,
+            park_num:null,
+            tname:null,
+            showmap:this.props.navigation.isFocused()
         }
     }
+
+
+
+    
 
 
     success(json) {
         if (json.code===0) {
             this.setState({dataSource:json.data.list})
-        } else { }
+        } else {
+            return;
+        }
     }
 
+
+
+
     componentWillMount(){
+
         const param = {
-            currentPage:this.state.currentPage,
-            pageSize:this.state.pageSize,
+            page_index:this.state.page_index,
+            page_size:this.state.page_size,
             lat:this.state.lat,
             lng:this.state.lng,
             distance:this.state.distance
         };
         tools.Post(API.search,param,this.success.bind(this));
         //console.warn(tools.Post);
+
+        this.getPosition();
     }
 
+
+    getPosition () {
+        Geolocation.getCurrentPosition().then(
+            (data) => {
+            
+            this.setState({
+            zoom:14,
+            tname:data.address,
+            markers: [
+                {
+                    latitude: parseFloat(data.latitude),
+                    longitude: parseFloat(data.longitude),
+                    title: data.address
+                }
+            ],
+            marker:{} ,
+            center: {
+                latitude: parseFloat(data.latitude),
+                longitude: parseFloat(data.longitude)
+            }
+            });
+        })
+        .catch(e =>{
+            console.warn(e, 'error');
+        })
+    }
+    
+    
     render() {
+        
         return (
             <View style={styles.container}>
                 <FlatList
+                    keyExtractor={(item, index) => item.key}
                     ListHeaderComponent = {
                         <View>
                             <Slider />
@@ -74,20 +128,60 @@ export default class Home extends Component {
                                 </TouchableOpacity>
                             </View>
                             <WhiteSpace size='sm'/>
-                            <TouchableOpacity 
-                                activeOpacity = {1}
-                                style={styles.map}
-                                //onPress = {() => this.props.navigation.navigate('Search')}
-                            >
-                                <MapView navigation = {this.props.navigation}/>
-                            </TouchableOpacity>
+                            <View style={styles.map}>
+                                <View>
+                                    <View style={styles.title}>
+                                        <Text style={styles.park_num}>
+                                            附近有
+                                            <Text style={[ styles.park_num, {color:global.theme.color}]}>{this.state.park_num}</Text>
+                                            个停车场
+                                        </Text>
+                                        <View style={styles.tname}>
+                                            <Text 
+                                                style={styles.tname_text}
+                                                numberOfLines={1}
+                                                //ellipsizeMode = 'tail' 
+                                            >
+                                                {this.state.tname}
+                                            </Text>
+                                            <TouchableOpacity
+                                                onPress={()=>this.getPosition()}
+                                            >
+                                                <EvilIcons 
+                                                    name='refresh' 
+                                                    size={28} 
+                                                    color={global.theme.color}
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                        <MapView
+                                            mayType ={this.state.mayType}
+                                            zoom = {this.state.zoom}
+                                            center = {this.state.center}
+                                            trafficEnabled = {this.state.trafficEnabled}
+                                            baiduHeatMapEnabled = {this.state.baiduHeatMapEnabled}
+                                            
+                                            //marker = {this.state.marker}//当前位置marker
+                                            markers = {this.state.markers}//自定义添加markers
+                                            navigation = {this.props.navigation}//导航属性传递
+                                            width = {Dimensions.get('window').width-20}
+                                            height = {180}
+                                            
+                                        />
+                                    <Text style={styles.footer}>推荐停车场</Text>
+                                </View>
+                            </View>
+                            
+
+
                             <WhiteSpace size='sm'/>
                         </View>
                     }
                     data={this.state.dataSource}
                     renderItem={
                         ({item}) => <ListItem 
-                            key={item.key} 
+                            //key={item.key} 
                             goods_name={item.goods_name}//停车场名称
                             distance={item.distance}//距离
                             dz={item.dz}//地址
@@ -160,8 +254,33 @@ const styles = StyleSheet.create({
         paddingLeft:10,
         paddingRight:10,
         justifyContent: 'center',
-        alignItems: 'center',
+        // alignItems: 'center',
         backgroundColor:'white',
         height:280
+    },
+
+    title:{
+        flexDirection: 'row',
+        //justifyContent: 'center',
+        alignItems: 'center',
+        paddingBottom:10
+    },
+    park_num:{
+        fontSize:18,
+        color:'grey',
+    },
+    tname:{
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        flex:1,
+        paddingLeft:40
+    },
+    tname_text:{
+        color:'#bcbcbc'
+    },
+    footer:{
+        paddingTop:15,
+        fontSize:16
     }
 });

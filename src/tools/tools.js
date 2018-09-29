@@ -15,7 +15,7 @@ export default class Tools {
             .then((response)=>response.json())
             .then(success)
             .catch((error)=>{
-                console.warn(error)
+                console.log(error)
             })
     }
 }
