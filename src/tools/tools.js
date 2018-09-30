@@ -18,5 +18,17 @@ export default class Tools {
                 console.log(error)
             })
     }
+    //监听路由声明周期
+    //addListener，接受navigation属性;
+    //listentype,监听类型1
+    //callback，监听回调
+    ListenRouteLife(addListener,listentype,callback){
+        addListener(
+            listentype,
+            callback
+        );
+    }
+
+
 }
 

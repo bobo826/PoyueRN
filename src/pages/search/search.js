@@ -69,7 +69,6 @@ class SegmentedControl extends Component {
 
 
 
-
 class search extends Component {
     
     constructor(props) {
@@ -106,6 +105,8 @@ class search extends Component {
             baiduHeatMapEnabled: false,
             point:[]
         };
+
+
 
         
     }
@@ -169,8 +170,10 @@ class search extends Component {
         }
     }
 
+    
+
     componentWillMount(){
-        
+        //console.warn('search')
         //获取当前定位
         this.getPosition();
         // 第一次页面加载时发送post请求
@@ -183,10 +186,24 @@ class search extends Component {
         };
         tools.Post(API.search,param,this.success.bind(this));
 
-        
+        // 通过addListener开启监听，可以使用上面的四个属性
 
-        
+        //console.warn(this.props.navigation.addListener)
+        this.willFocusSubscription = tools.ListenRouteLife(
+            this.props.navigation.addListener,
+            "willFocus",
+            ()=>console.warn("willFocusSubscription")
+        );
+
     }
+
+    componentWillUnmount(){
+        // 在页面消失的时候，取消监听
+        this.willFocusSubscription && this.willFocusSubscription.remove();
+    }
+    
+     
+
 
 
 

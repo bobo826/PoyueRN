@@ -11,8 +11,11 @@ import {
     Button
 } from 'react-native';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';//使用时需要配置或者react-native link
-import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map'
+import { MapView, MapTypes, MapModule, Geolocation } from 'react-native-baidu-map';
+import tools from '../../../../tools/tools';
 const HomeMap = ()=>new MapView();
+
+
 
 
 export default class BaiduMap extends Component {
